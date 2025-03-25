@@ -1,12 +1,13 @@
 'use client';
 import { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation'
 import styles from "./page.module.css";
 import { Form, Button } from 'react-bootstrap';
 import { useAppDispatch, useAppSelector } from "../lib/hooks"
 import { setToken } from "../lib/reducers/commonSlice"
 
-
 const Home: React.FC = () => {
+  const router = useRouter()
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -14,25 +15,35 @@ const Home: React.FC = () => {
   const dispatch = useAppDispatch();
 
   const handleLogin = async (username: string, password: string) => {
-    try {
-      const response = await fetch(
-        'http://127.0.0.1:8000/api-token-auth/',{
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({username: username, password: password})
-        }
-      );
-      const result = await response.json();
-      const token = result['token'];
-      dispatch(setToken(token));
-    } catch (error) {
-      console.log(error);
+    const token = await login(username, password);
+    dispatch(setToken(token));
+    if(token){
+      router.push("/dashboard");
     }
   };
 
+  const login = async (username: string, password: string) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const response = await fetch(
+          'http://127.0.0.1:8000/api-token-auth/',{
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({username: username, password: password})
+          }
+        );
+        const result = await response.json();
+        const token = result['token'];
+        resolve(token);
+      } catch (error) {
+        console.log(error);
+        reject(error);
+      }
+    });
+  }
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     handleLogin(username, password);
