@@ -2,12 +2,16 @@
 import { useState, useEffect } from "react";
 import styles from "./page.module.css";
 import { Form, Button } from 'react-bootstrap';
+import { useAppDispatch, useAppSelector } from "../lib/hooks"
+import { setToken } from "../lib/reducers/commonSlice"
 
 
 const Home: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [token, setToken] = useState('');
+
+  const currentToken = useAppSelector((state) => state.common.token);
+  const dispatch = useAppDispatch();
 
   const handleLogin = async (username: string, password: string) => {
     try {
@@ -23,7 +27,7 @@ const Home: React.FC = () => {
       );
       const result = await response.json();
       const token = result['token'];
-      setToken(token);
+      dispatch(setToken(token));
     } catch (error) {
       console.log(error);
     }
