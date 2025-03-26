@@ -14,16 +14,38 @@ const UploadBooks: React.FC = () => {
     function onDrop(acceptedFiles: File[]) {
         setFiles(acceptedFiles);
     }
+
+    async function onUpload() {
+        for (const file of files) {
+            const data = new FormData();
+            data.append('file', file);
+            try {
+                const response = await fetch(
+                    'http://127.0.0.1:8000/api/v1/book/', {
+                    method: 'POST',
+                    body: data
+                }
+                );
+                const result = await response.json();
+                console.log(result);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    }
+
     const fileList = () => {
         const items = [];
         for (let i = 0; i < files.length; i++) {
-            items.push(<tr>
+            items.push(<tr key={files[i].name}>
                 <td>{files[i].name}</td>
                 <td><Button variant="danger">Remove</Button></td>
             </tr>)
         }
         return items;
     };
+
+
 
     return (
         <div className={styles.bookUpload}>
@@ -55,12 +77,12 @@ const UploadBooks: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                { fileList() }
+                                {fileList()}
                             </tbody>
                         </Table>
                     </div>
                     <div className={styles.uploadButton}>
-                        <Button>Upload</Button>
+                        <Button onClick={onUpload}>Upload</Button>
                     </div>
                 </Container>
             </main>

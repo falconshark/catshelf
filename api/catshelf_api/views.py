@@ -2,10 +2,15 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from django.core.files.storage import FileSystemStorage
 
 from .models import User, Book
 from .serializers import UserSerializer, BookSerializer
+from pathlib import Path
+import random
+import string
 
+import epub_meta
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -17,7 +22,31 @@ class BookViewSet(viewsets.ModelViewSet):
     serializer_class = BookSerializer
     
     def create(self, request):
+        BASE_DIR = Path(__file__).resolve().parent.parent
+        folder='epub' 
         file = request.FILES.get('file')
-        book_name = request.POST.get('title')
-        response = book_name
+        original_file_name = file.name
+        fs = FileSystemStorage(location=folder)
+        
+        #Save file with random file name
+        random_file_name = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(5))
+        random_file_name = f"{random_file_name}.epub"
+        fs.save(random_file_name, file)
+        
+        file_url =  f"{BASE_DIR}/{folder}/{random_file_name}"
+        metadata = epub_meta.get_epub_metadata(file_url, read_cover_image=True)
+        
+        book = Book(
+            title=metadata.title, 
+            file=f"/{folder}/{random_file_name}",
+            author=metadata.authors,
+        )
+        
+        book.save()
+        
+        response = {
+            'filename': random_file_name,
+            'title': metadata.title, 
+            'author': metadata.authors,
+        }
         return Response(response)
