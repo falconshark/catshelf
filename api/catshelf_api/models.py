@@ -9,7 +9,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 
-
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created and instance is not None:
@@ -46,7 +45,6 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-
     username = models.CharField(
         verbose_name=_("username"),
         unique=True,
@@ -64,10 +62,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         _('active'),
         default=True,
     )
-
     objects = UserManager()
-
     USERNAME_FIELD = 'username'
 
     def __str__(self):
         return self.username
+
+class Book(models.Model):
+    title = models.CharField(max_length=256)
+    author = models.CharField(max_length=256)
+    description = models.CharField(max_length=256)
+    image = models.ImageField(upload_to='images/')
