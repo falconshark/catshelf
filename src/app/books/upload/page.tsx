@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from "react";
-import { Container, Card, Button, Image, Row, Col } from 'react-bootstrap';
+import { Container, Button, Table } from 'react-bootstrap';
 import Topbar from '@/app/components/Topbar';
 import Dropzone from 'react-dropzone';
 import styles from "./page.module.css";
@@ -14,6 +14,16 @@ const UploadBooks: React.FC = () => {
     function onDrop(acceptedFiles: File[]) {
         setFiles(acceptedFiles);
     }
+    const fileList = () => {
+        const items = [];
+        for (let i = 0; i < files.length; i++) {
+            items.push(<tr>
+                <td>{files[i].name}</td>
+                <td><Button variant="danger">Remove</Button></td>
+            </tr>)
+        }
+        return items;
+    };
 
     return (
         <div className={styles.bookUpload}>
@@ -30,11 +40,27 @@ const UploadBooks: React.FC = () => {
                                         <div className={styles.help}>
                                             Drop epub file into the dropzone and click "upload" button to upload.
                                         </div>
-                                        <Button>Upload</Button>
+                                        <Button>Add File</Button>
                                     </div>
                                 </section>
                             )}
                         </Dropzone>
+                    </div>
+                    <div className={styles.uploadList}>
+                        <Table striped bordered>
+                            <thead>
+                                <tr>
+                                    <th>File Name</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                { fileList() }
+                            </tbody>
+                        </Table>
+                    </div>
+                    <div className={styles.uploadButton}>
+                        <Button>Upload</Button>
                     </div>
                 </Container>
             </main>
