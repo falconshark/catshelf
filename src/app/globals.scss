@@ -9,6 +9,7 @@
     --foreground: #ededed;
   }
 }
+
 html,
 body {
   max-width: 100vw;
@@ -33,7 +34,8 @@ a {
   text-decoration: none;
 }
 
-.toolbar {
+.toolbar{
   display: flex;
   justify-content: flex-end;
-}/*# sourceMappingURL=globals.css.map */
+}
+

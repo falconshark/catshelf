@@ -88,7 +88,6 @@ TEMPLATES = [
 AUTH_USER_MODEL = "catshelf_api.User"
 WSGI_APPLICATION = 'api.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
