@@ -48,7 +48,7 @@ class BookViewSet(viewsets.ModelViewSet):
             fh = open(f"{folder}/{cover_filename}", "wb")
             fh.write(base64.b64decode(cover_image))
             fh.close()
-            cover_image_url = f"{folder}/{cover_filename}"
+            cover_image_url = f"/{folder}/{cover_filename}"
         
         book = Book(
             title=metadata.title, 
