@@ -71,5 +71,5 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Book(models.Model):
     title = models.CharField(max_length=256)
     author = models.CharField(max_length=256)
-    file = models.FileField()
-    cover = models.ImageField()
+    file = models.CharField(max_length=256)
+    cover = models.CharField(max_length=256)

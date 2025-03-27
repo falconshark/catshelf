@@ -7,7 +7,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = "__all__"
         
 class BookSerializer(serializers.ModelSerializer):
-    file = serializers.FileField()
     class Meta:
         model = Book
         fields = "__all__"

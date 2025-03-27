@@ -6,10 +6,11 @@ import Topbar from '../components/Topbar';
 import styles from "./page.module.css";
 
 function Books() {
-    const [books, setBooks] = useState<{ title: string }[]>([]);
+    const [books, setBooks] = useState<{id: number, title: string, cover: string }[]>([]);
     const token = useAppSelector((state) => state.common.token);
     const apiUrl = useAppSelector((state) => state.common.apiUrl);
-    console.log(token);
+    console.log(apiUrl);
+
     useEffect(() => {
         const fetchBooks = async () => {
             try {
@@ -34,10 +35,12 @@ function Books() {
     const bookList = () => {
         const items = [];
         for (let i = 0; i < books.length; i++) {
-            items.push(<Col md="2">
+            const coverUrl = `${apiUrl}/api/v1${books[i].cover}`;
+            console.log(coverUrl);
+            items.push(<Col md="2" key={books[i].id}>
                 <div className={styles.book}>
                     <div className={styles.cover}>
-                        <Image className={styles.coverImg} src="/images/demo-cover1.jpg" thumbnail />
+                        <Image className={styles.coverImg} src={coverUrl} thumbnail />
                     </div>
                     <div className="title">
                         {books[i].title}

@@ -13,18 +13,15 @@
 .books .book .cover {
   position: relative;
   margin-left: 1em;
-  display: inline-block;
-  border: 3px dashed #fff;
-  overflow: hidden;
-  background-color: #fff;
-  border-radius: 10px;
   margin-bottom: 5px;
 }
 .books .book .coverImg {
   overflow: hidden;
-  width: 100%;
-  height: 100%;
-  -o-object-fit: cover;
-     object-fit: cover;
-  border-radius: 10px;
+  height: 220px;
+  width: 140px;
+  -o-object-fit: contain;
+     object-fit: contain;
+  -o-object-position: center bottom;
+     object-position: center bottom;
+  border: 0;
 }/*# sourceMappingURL=page.module.css.map */
