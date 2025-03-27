@@ -1,11 +1,17 @@
 'use client';
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Container, Button, Table } from 'react-bootstrap';
 import Topbar from '@/app/components/Topbar';
 import Dropzone from 'react-dropzone';
+import { useAppDispatch, useAppSelector } from "@/lib/hooks"
 import styles from "./page.module.css";
 
 const UploadBooks: React.FC = () => {
+    const router = useRouter()
+    const token = useAppSelector((state) => state.common.token);
+    const apiUrl = useAppSelector((state) => state.common.apiUrl);
+
     const dropzoneConfig = {
         accept: 'application/epub+zip',
     };
@@ -21,13 +27,19 @@ const UploadBooks: React.FC = () => {
             data.append('file', file);
             try {
                 const response = await fetch(
-                    'http://127.0.0.1:8000/api/v1/book/', {
+                    `${apiUrl}/api/v1/book/`, {
                     method: 'POST',
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                    },
                     body: data
                 }
                 );
                 const result = await response.json();
-                console.log(result);
+                if(response.status !== 200){
+                    return;
+                }
+                router.push("/books");
             } catch (error) {
                 console.log(error);
             }

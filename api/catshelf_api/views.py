@@ -20,6 +20,8 @@ class UserViewSet(viewsets.ModelViewSet):
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated, )
     
     def create(self, request):
         BASE_DIR = Path(__file__).resolve().parent.parent
