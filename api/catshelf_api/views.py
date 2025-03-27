@@ -7,6 +7,7 @@ from django.core.files.storage import FileSystemStorage
 from .models import User, Book
 from .serializers import UserSerializer, BookSerializer
 from pathlib import Path
+import base64
 import random
 import string
 
@@ -32,23 +33,36 @@ class BookViewSet(viewsets.ModelViewSet):
         
         #Save file with random file name
         random_file_name = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(5))
-        random_file_name = f"{random_file_name}.epub"
-        fs.save(random_file_name, file)
+        random_file_full_name = f"{random_file_name}.epub"
+        fs.save(random_file_full_name, file)
         
-        file_url =  f"{BASE_DIR}/{folder}/{random_file_name}"
+        file_url =  f"{BASE_DIR}/{folder}/{random_file_full_name}" #For reading epub meta data
+        file_url_short = f"/{folder}/{random_file_full_name}" #For save to database
+        
         metadata = epub_meta.get_epub_metadata(file_url, read_cover_image=True)
+        cover_image_url = ''
+        
+        if metadata.cover_image_content:
+            cover_image = metadata.cover_image_content
+            cover_filename = f"{random_file_name}{metadata.cover_image_extension}"
+            fh = open(f"{folder}/{cover_filename}", "wb")
+            fh.write(base64.b64decode(cover_image))
+            fh.close()
+            cover_image_url = f"{folder}/{cover_filename}"
         
         book = Book(
             title=metadata.title, 
-            file=f"/{folder}/{random_file_name}",
+            file=file_url_short,
             author=metadata.authors,
+            cover=cover_image_url,
         )
         
         book.save()
         
         response = {
-            'filename': random_file_name,
+            'file': file_url_short,
             'title': metadata.title, 
             'author': metadata.authors,
+            'cover': cover_image_url,
         }
         return Response(response)
