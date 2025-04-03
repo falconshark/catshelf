@@ -9,7 +9,6 @@ function Books() {
     const [books, setBooks] = useState<{id: number, title: string, cover: string }[]>([]);
     const token = useAppSelector((state) => state.common.token);
     const apiUrl = useAppSelector((state) => state.common.apiUrl);
-    console.log(apiUrl);
 
     useEffect(() => {
         const fetchBooks = async () => {
