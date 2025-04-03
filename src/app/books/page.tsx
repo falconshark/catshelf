@@ -36,16 +36,16 @@ function Books() {
         const items = [];
         for (let i = 0; i < books.length; i++) {
             const coverUrl = `${apiUrl}/api/v1${books[i].cover}`;
-            console.log(coverUrl);
+            const bookUrl = `/book/${books[i].id}`;
             items.push(<Col md="2" key={books[i].id}>
-                <div className={styles.book}>
+                <a className={styles.book} href={bookUrl}>
                     <div className={styles.cover}>
                         <Image className={styles.coverImg} src={coverUrl} thumbnail />
                     </div>
                     <div className="title">
                         {books[i].title}
                     </div>
-                </div>
+                </a>
             </Col>)
         }
         return items;
