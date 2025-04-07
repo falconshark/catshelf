@@ -7,7 +7,7 @@ import { useCookiesNext } from 'cookies-next';
 import { setToken } from '@/lib/reducers/commonSlice';
 import styles from "./page.module.css";
 
-const Home: React.FC = () => {
+function Home() {
   const { setCookie } = useCookiesNext();
   const router = useRouter()
   const dispatch = useAppDispatch();
@@ -16,6 +16,13 @@ const Home: React.FC = () => {
   const [password, setPassword] = useState('');
 
   const apiUrl = useAppSelector((state) => state.common.apiUrl);
+  const token = useAppSelector((state) => state.common.token);
+
+  useEffect(() => {
+    if (token) {
+      router.push("/dashboard");
+    }
+  }, [router]);
 
   const handleLogin = async (username: string, password: string) => {
     try {

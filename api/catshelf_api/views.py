@@ -7,6 +7,7 @@ from django.core.files.storage import FileSystemStorage
 from .models import User, Book
 from .serializers import UserSerializer, BookSerializer
 from pathlib import Path
+import json
 import base64
 import random
 import string
@@ -53,7 +54,7 @@ class BookViewSet(viewsets.ModelViewSet):
         book = Book(
             title=metadata.title, 
             file=file_url_short,
-            author=metadata.authors,
+            author=json.dumps(metadata.authors),
             cover=cover_image_url,
         )
         

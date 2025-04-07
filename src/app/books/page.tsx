@@ -6,7 +6,7 @@ import Topbar from '../components/Topbar';
 import styles from "./page.module.css";
 
 function Books() {
-    const [books, setBooks] = useState<{id: number, title: string, cover: string }[]>([]);
+    const [books, setBooks] = useState<{ id: number, title: string, cover: string }[]>([]);
     const token = useAppSelector((state) => state.common.token);
     const apiUrl = useAppSelector((state) => state.common.apiUrl);
 
@@ -36,15 +36,19 @@ function Books() {
         for (let i = 0; i < books.length; i++) {
             const coverUrl = `${apiUrl}/api/v1${books[i].cover}`;
             const bookUrl = `/book/${books[i].id}`;
+            const editUrl = `/book/${books[i].id}/edit`;
+
             items.push(<Col md="2" key={books[i].id}>
-                <a className={styles.book} href={bookUrl}>
-                    <div className={styles.cover}>
-                        <Image className={styles.coverImg} src={coverUrl} thumbnail />
-                    </div>
-                    <div className="title">
-                        {books[i].title}
-                    </div>
-                </a>
+                <div className={styles.cover}>
+                    <Image className={styles.coverImg} src={coverUrl} thumbnail />
+                </div>
+                <div className="title">
+                    {books[i].title}
+                </div>
+                <div className={styles.actionButtons}>
+                    <Button href={bookUrl} className={styles.actionButton} as="a">View</Button>
+                    <Button href={editUrl} className={styles.actionButton} as="a">Edit</Button>
+                </div>
             </Col>)
         }
         return items;
@@ -61,7 +65,7 @@ function Books() {
                     </div>
                     <div className={styles.bookList}>
                         <Row className={styles.latestBooks}>
-                            { bookList() }
+                            {bookList()}
                         </Row>
                     </div>
                 </Container>

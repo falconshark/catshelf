@@ -24,4 +24,11 @@
   -o-object-position: center bottom;
      object-position: center bottom;
   border: 0;
+}
+.books .actionButtons {
+  margin-top: 10px;
+}
+.books .actionButton {
+  display: block;
+  margin-top: 15px;
 }/*# sourceMappingURL=page.module.css.map */

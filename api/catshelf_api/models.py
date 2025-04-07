@@ -70,6 +70,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Book(models.Model):
     title = models.CharField(max_length=256)
-    author = models.CharField(max_length=256)
+    author = models.JSONField(max_length=256)
+    isbn = models.CharField(max_length=13, null=True, )
+    published_date = models.DateField(null=True, )
+    description = models.TextField(null=True, )
     file = models.CharField(max_length=256)
     cover = models.CharField(max_length=256)
