@@ -13,18 +13,25 @@
 
     .book {
         text-align: center;
-        .cover{
-            position: relative;
-            margin-left: 1em;
-            margin-bottom: 5px;
-        }
         .coverImg {
             overflow: hidden;
             height: 220px;
             width: 140px;
             object-fit: contain;
             object-position: center bottom;
-            border: 0;
+            border: 1px solid #ccc;
+            .bookTitle{
+                text-align: center;
+            }
+        }
+    }
+    .cover{
+        position: relative;
+        margin-left: 1em;
+        margin-bottom: 5px;
+        &:hover{
+            cursor: pointer;
+            opacity: 0.6;
         }
     }
     .actionButtons{

@@ -1,11 +1,12 @@
 'use client';
 import { useState, useEffect } from "react";
-import { Container, Card, Button, Image, Row, Col } from 'react-bootstrap';
+import { Container, Card, Modal, Button, Image, Row, Col } from 'react-bootstrap';
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import Topbar from '../components/Topbar';
 import styles from "./page.module.css";
 
 function Books() {
+    const [showInfo, setShowInfo] = useState<boolean>(false);
     const [books, setBooks] = useState<{ id: number, title: string, cover: string }[]>([]);
     const token = useAppSelector((state) => state.common.token);
     const apiUrl = useAppSelector((state) => state.common.apiUrl);
@@ -40,7 +41,7 @@ function Books() {
 
             items.push(<Col md="2" key={books[i].id}>
                 <div className={styles.cover}>
-                    <Image className={styles.coverImg} src={coverUrl} thumbnail />
+                    <Image className={styles.coverImg} src={coverUrl} thumbnail onClick={() => setShowInfo(!showInfo)} />
                 </div>
                 <div className="title">
                     {books[i].title}
@@ -58,6 +59,20 @@ function Books() {
         <div className={styles.books}>
             <Topbar />
             <main className={styles.main}>
+                <Modal show={showInfo} onHide={handleClose}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Modal heading</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>Woohoo, you are reading this text in a modal!</Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={handleClose}>
+                            Close
+                        </Button>
+                        <Button variant="primary" onClick={handleClose}>
+                            Save Changes
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
                 <Container>
                     <h1>Books</h1>
                     <div className='toolbar'>

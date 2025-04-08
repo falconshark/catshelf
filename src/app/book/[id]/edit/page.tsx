@@ -91,7 +91,7 @@ function BookDetail({ params }: { params: Promise<{ id: string }> }) {
             }
             );
             const result = await response.json();
-            //router.push("/books");
+            router.push("/books");
         } catch (error) {
             console.log(error);
         }

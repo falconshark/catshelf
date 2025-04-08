@@ -10,11 +10,6 @@
 .books .book {
   text-align: center;
 }
-.books .book .cover {
-  position: relative;
-  margin-left: 1em;
-  margin-bottom: 5px;
-}
 .books .book .coverImg {
   overflow: hidden;
   height: 220px;
@@ -23,7 +18,19 @@
      object-fit: contain;
   -o-object-position: center bottom;
      object-position: center bottom;
-  border: 0;
+  border: 1px solid #ccc;
+}
+.books .book .coverImg .bookTitle {
+  text-align: center;
+}
+.books .cover {
+  position: relative;
+  margin-left: 1em;
+  margin-bottom: 5px;
+}
+.books .cover:hover {
+  cursor: pointer;
+  opacity: 0.6;
 }
 .books .actionButtons {
   margin-top: 10px;
