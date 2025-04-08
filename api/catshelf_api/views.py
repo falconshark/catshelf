@@ -7,11 +7,11 @@ from django.core.files.storage import FileSystemStorage
 from .models import User, Book
 from .serializers import UserSerializer, BookSerializer
 from pathlib import Path
+import os
 import json
 import base64
 import random
 import string
-
 import epub_meta
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -25,7 +25,48 @@ class BookViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated, )
     
-    def create(self, request):
+    def partial_update(self, request, pk=None):
+        book_data = json.loads(request.POST.get('data'))
+        file = request.FILES.get('file')
+        
+        new_data = {
+            'title': book_data['title'],
+            'author': book_data['author'],
+            'description': book_data['description'],
+            'isbn': book_data['isbn'],
+        }
+        
+        #Save file with random file name
+        if file:
+            BASE_DIR = Path(__file__).resolve().parent.parent
+            folder='epub'
+            filename, extension = os.path.splitext(file.name)
+            fs = FileSystemStorage(location=folder)
+            random_file_name = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(5))
+            full_file_name = f"{random_file_name}{extension}"
+            fs.save(full_file_name, file)
+            cover_image_url = f"/{folder}/{full_file_name}"
+            new_data['cover'] = cover_image_url
+        
+        response = {
+            'title': book_data['title'],
+            'author': book_data['author'],
+            'description': book_data['description'],
+            'isbn': book_data['isbn'],
+        }
+        
+        instance = self.get_object()
+        serializer = BookSerializer(
+            instance,
+            data=new_data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        return Response(response)
+    
+    def create(self, request):  
         BASE_DIR = Path(__file__).resolve().parent.parent
         folder='epub' 
         file = request.FILES.get('file')

@@ -70,24 +70,28 @@ function BookDetail({ params }: { params: Promise<{ id: string }> }) {
 
     const updateBook = async () => {
         try {
+            const data = new FormData();
+            if(cover){
+                data.append('file', cover);
+            }
+            data.append('data', JSON.stringify({
+                title: title, 
+                author: authors.split(','), 
+                description: description, 
+                isbn: isbn
+            }));
             const response = await fetch(
                 `${apiUrl}/api/v1/book/${id}/`, {
                 method: 'PATCH',
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json',
                     'Authorization': `Token ${token}`,
                 },
-                body: JSON.stringify({
-                    title: title,
-                    author: authors.split(','),
-                    description: description,
-                    isbn: isbn
-                }),
+                body: data
             }
             );
             const result = await response.json();
-            router.push("/books");
+            //router.push("/books");
         } catch (error) {
             console.log(error);
         }
