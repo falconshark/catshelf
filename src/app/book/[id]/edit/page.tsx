@@ -2,6 +2,7 @@
 import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Container, Form, Button, Image } from 'react-bootstrap';
+import Dropzone from 'react-dropzone';
 import Topbar from '@/app/components/Topbar';
 import { useAppDispatch, useAppSelector } from "@/lib/hooks"
 import styles from "./page.module.css";
@@ -9,18 +10,37 @@ import styles from "./page.module.css";
 function BookDetail({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
 
+    //For dropzone
+    const [showDropzone, setShowDropzone] = useState(false);
+    const dropzoneConfig = {
+        accept: 'image/*',
+        maxFiles: 1,
+    };
+    function coverPreview(cover: File) {
+        const objectUrl = URL.createObjectURL(cover)
+        return objectUrl;
+    }
+
+    function onDrop(acceptedFiles: File[]) {
+        setCover(acceptedFiles[0]);
+    }
+
+    //For store full book information
     const [book, setBook] = useState<{ id: number, title: string, author: Array<String>, cover: string, description: string } | null>(null);
 
+    //For store form information
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [authors, setAuthors] = useState('');
     const [isbn, setIsbn] = useState('');
+    const [cover, setCover] = useState<File | null>(null);
+    
 
     const token = useAppSelector((state) => state.common.token);
     const apiUrl = useAppSelector((state) => state.common.apiUrl);
     const { id } = use(params);
 
-    //For render information
+    //For render cover image
     const coverUrl = `${apiUrl}/api/v1${book?.cover}`;
 
     useEffect(() => {
@@ -33,7 +53,7 @@ function BookDetail({ params }: { params: Promise<{ id: string }> }) {
                         'Content-Type': 'application/json',
                         'Authorization': `Token ${token}`,
                     },
-                  }
+                }
                 );
                 const result = await response.json();
                 setBook(result);
@@ -58,13 +78,13 @@ function BookDetail({ params }: { params: Promise<{ id: string }> }) {
                     'Content-Type': 'application/json',
                     'Authorization': `Token ${token}`,
                 },
-                body: JSON.stringify({ 
-                    title: title, 
-                    author: authors.split(','), 
-                    description: description, 
+                body: JSON.stringify({
+                    title: title,
+                    author: authors.split(','),
+                    description: description,
                     isbn: isbn
-                   }),
-                }
+                }),
+            }
             );
             const result = await response.json();
             router.push("/books");
@@ -78,6 +98,7 @@ function BookDetail({ params }: { params: Promise<{ id: string }> }) {
         updateBook();
     };
 
+
     return (
         <div className={styles.bookUpload}>
             <Topbar />
@@ -86,6 +107,29 @@ function BookDetail({ params }: { params: Promise<{ id: string }> }) {
                     <h1>Edit Book</h1>
                     {book && <Image className={styles.coverImg} src={coverUrl} thumbnail />}
                     {book && <h2 className={styles.bookTitle}>{book?.title}</h2>}
+                    <Button className={styles.changeCoverBtn} variant="secondary" onClick={() => setShowDropzone(!showDropzone)}>
+                        Change Cover
+                    </Button>
+
+                    {showDropzone && (
+                        <div className={styles.dropzone}>
+                            <Dropzone onDrop={onDrop}>
+                                {({ getRootProps, getInputProps }) => (
+                                    <section>
+                                        {cover && <Image className={styles.coverImg} src={coverPreview(cover)} thumbnail />}
+                                        <div {...getRootProps()}>
+                                            <input {...getInputProps()} {...dropzoneConfig} />
+                                            <div className={styles.help}>
+                                                Drop cover image into the dropzone.
+                                            </div>
+                                            <Button>Select Image</Button>
+                                        </div>
+                                    </section>
+                                )}
+                            </Dropzone>
+                        </div>
+                    )}
+
                     <Form onSubmit={handleSubmit}>
                         <Form.Group className="mb-3" controlId="title">
                             <Form.Label>Book Title</Form.Label>
