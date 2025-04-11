@@ -7,7 +7,8 @@ import styles from "./page.module.css";
 
 function Books() {
     const [showInfo, setShowInfo] = useState<boolean>(false);
-    const [books, setBooks] = useState<{ id: number, title: string, cover: string }[]>([]);
+    const [books, setBooks] = useState<{ id: number, title: string, cover: string, isbn: string, author: Array<String>, description: string, }[]>([]);
+    const [selectedBook, setSelectedBook] = useState<{ id: number, title: string, isbn: string, cover: string, author: Array<String>, description: string, } | null>(null);
     const token = useAppSelector((state) => state.common.token);
     const apiUrl = useAppSelector((state) => state.common.apiUrl);
 
@@ -41,7 +42,7 @@ function Books() {
 
             items.push(<Col md="2" key={books[i].id}>
                 <div className={styles.cover}>
-                    <Image className={styles.coverImg} src={coverUrl} thumbnail onClick={() => setShowInfo(!showInfo)} />
+                    <Image className={styles.coverImg} src={coverUrl} thumbnail onClick={(e) => hanldeShowInfo(e, books[i])}></Image>
                 </div>
                 <div className="title">
                     {books[i].title}
@@ -55,21 +56,40 @@ function Books() {
         return items;
     };
 
+    const hanldeShowInfo = (e: React.MouseEvent<HTMLImageElement>, book: { id: number, isbn: string, title: string, cover: string, description: string, author: Array<String>, }) => {
+        setShowInfo(!showInfo);
+        setSelectedBook(book);
+    }
+
     return (
         <div className={styles.books}>
             <Topbar />
             <main className={styles.main}>
-                <Modal show={showInfo} onHide={handleClose}>
+                <Modal show={showInfo}>
                     <Modal.Header closeButton>
-                        <Modal.Title>Modal heading</Modal.Title>
+                        <Modal.Title>{selectedBook?.title}</Modal.Title>
                     </Modal.Header>
-                    <Modal.Body>Woohoo, you are reading this text in a modal!</Modal.Body>
+                    <Modal.Body>
+                        <div className={styles.cover}>
+                            <Image className={styles.coverImg} src={`${apiUrl}/api/v1${selectedBook?.cover}`} thumbnail></Image>
+                        </div>
+                        <div className={styles.infoField}>
+                            Author:
+                            {selectedBook?.author.map((author, index) => {
+                                return <span key={index}>{author}</span>
+                            })}
+                        </div>
+                        <div className={styles.infoField}>
+                            ISBN:
+                            {selectedBook?.isbn }
+                        </div>
+                        <div className={styles.infoField}>
+                            {selectedBook?.description}
+                        </div>
+                    </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={handleClose}>
+                        <Button variant="secondary" onClick={() => setShowInfo(false)}>
                             Close
-                        </Button>
-                        <Button variant="primary" onClick={handleClose}>
-                            Save Changes
                         </Button>
                     </Modal.Footer>
                 </Modal>

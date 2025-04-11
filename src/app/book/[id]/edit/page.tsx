@@ -34,7 +34,7 @@ function BookDetail({ params }: { params: Promise<{ id: string }> }) {
     const [authors, setAuthors] = useState('');
     const [isbn, setIsbn] = useState('');
     const [cover, setCover] = useState<File | null>(null);
-    
+
 
     const token = useAppSelector((state) => state.common.token);
     const apiUrl = useAppSelector((state) => state.common.apiUrl);
@@ -58,9 +58,16 @@ function BookDetail({ params }: { params: Promise<{ id: string }> }) {
                 const result = await response.json();
                 setBook(result);
                 setTitle(result.title);
-                setIsbn(result.isbn);
-                setDescription(result.description);
-                setAuthors(result.author.join(','));
+                if (result.isbn) {
+                    setIsbn(result.isbn);
+                }
+                if (result.author) {
+                    let authors = JSON.parse(result.author).join(',');
+                    setAuthors(authors);
+                }
+                if (result.description) {
+                    setDescription(result.description);
+                }
             } catch (error) {
                 console.log(error);
             }
@@ -71,13 +78,13 @@ function BookDetail({ params }: { params: Promise<{ id: string }> }) {
     const updateBook = async () => {
         try {
             const data = new FormData();
-            if(cover){
+            if (cover) {
                 data.append('file', cover);
             }
             data.append('data', JSON.stringify({
-                title: title, 
-                author: authors.split(','), 
-                description: description, 
+                title: title,
+                author: authors.split(','),
+                description: description,
                 isbn: isbn
             }));
             const response = await fetch(
@@ -91,7 +98,7 @@ function BookDetail({ params }: { params: Promise<{ id: string }> }) {
             }
             );
             const result = await response.json();
-            router.push("/books");
+            //router.push("/books");
         } catch (error) {
             console.log(error);
         }
@@ -137,7 +144,7 @@ function BookDetail({ params }: { params: Promise<{ id: string }> }) {
                     <Form onSubmit={handleSubmit}>
                         <Form.Group className="mb-3" controlId="title">
                             <Form.Label>Book Title</Form.Label>
-                            <Form.Control type="text" onChange={(e) => setTitle(e.target.value)} value={title} />
+                            <Form.Control type="text" onChange={(e) => setTitle(e.target.value)} value={title} required/>
                         </Form.Group>
 
                         <Form.Group className="mb-3" controlId="isbn">

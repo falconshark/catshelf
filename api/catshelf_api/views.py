@@ -31,12 +31,18 @@ class BookViewSet(viewsets.ModelViewSet):
         
         new_data = {
             'title': book_data['title'],
-            'author': book_data['author'],
-            'description': book_data['description'],
-            'isbn': book_data['isbn'],
         }
         
-        #Save file with random file name
+        if book_data['author']:
+            new_data['author'] = json.dumps(book_data['author'])
+            
+        if book_data['description']:
+            new_data['description'] = book_data['description']
+        
+        if book_data['isbn']:
+            new_data['isbn'] = book_data['isbn']
+        
+        #Save file with random file name    
         if file:
             BASE_DIR = Path(__file__).resolve().parent.parent
             folder='epub'
@@ -50,7 +56,7 @@ class BookViewSet(viewsets.ModelViewSet):
         
         response = {
             'title': book_data['title'],
-            'author': book_data['author'],
+            'author': json.dumps(book_data['author']),
             'description': book_data['description'],
             'isbn': book_data['isbn'],
         }
