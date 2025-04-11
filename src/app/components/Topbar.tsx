@@ -15,6 +15,9 @@ function Topbar() {
           <Nav.Link href="/dashboard">Dashboard</Nav.Link>
           <Nav.Link href="/books">Books</Nav.Link>
         </Nav>
+        <Nav className="justify-content-end">
+          <Nav.Link href="/user">{}</Nav.Link>
+        </Nav>
       </Navbar.Collapse>
     </Container>
   </Navbar>
