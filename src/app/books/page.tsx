@@ -7,8 +7,8 @@ import styles from "./page.module.css";
 
 function Books() {
     const [showInfo, setShowInfo] = useState<boolean>(false);
-    const [books, setBooks] = useState<{ id: number, title: string, cover: string, isbn: string, author: Array<String>, description: string, }[]>([]);
-    const [selectedBook, setSelectedBook] = useState<{ id: number, title: string, isbn: string, cover: string, author: Array<String>, description: string, } | null>(null);
+    const [books, setBooks] = useState<{ id: number, title: string, cover: string, isbn: string, author: string, description: string, }[]>([]);
+    const [selectedBook, setSelectedBook] = useState<{ id: number, title: string, isbn: string, cover: string, author: string, description: string, } | null>(null);
     const token = useAppSelector((state) => state.common.token);
     const apiUrl = useAppSelector((state) => state.common.apiUrl);
 
@@ -56,7 +56,7 @@ function Books() {
         return items;
     };
 
-    const hanldeShowInfo = (e: React.MouseEvent<HTMLImageElement>, book: { id: number, isbn: string, title: string, cover: string, description: string, author: Array<String>, }) => {
+    const hanldeShowInfo = (e: React.MouseEvent<HTMLImageElement>, book: { id: number, isbn: string, title: string, cover: string, description: string, author: string, }) => {
         setShowInfo(!showInfo);
         setSelectedBook(book);
     }
@@ -75,9 +75,9 @@ function Books() {
                         </div>
                         <div className={styles.infoField}>
                             Author:
-                            {selectedBook?.author.map((author, index) => {
+                            {selectedBook ? JSON.parse(selectedBook.author).map((author: string, index: number) => {
                                 return <span key={index}>{author}</span>
-                            })}
+                            }) : null}
                         </div>
                         <div className={styles.infoField}>
                             ISBN:
@@ -100,7 +100,7 @@ function Books() {
                     </div>
                     <div className={styles.bookList}>
                         <Row className={styles.latestBooks}>
-                            {bookList()}
+                            {books.length !== 0 ? bookList() : <div className={styles.noBooks}>No books available</div>}
                         </Row>
                     </div>
                 </Container>
