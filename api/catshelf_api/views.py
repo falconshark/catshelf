@@ -114,3 +114,17 @@ class BookViewSet(viewsets.ModelViewSet):
             'cover': cover_image_url,
         }
         return Response(response)
+    
+    def destroy(self, request, pk=None):
+        instance = self.get_object()
+        BASE_DIR = Path(__file__).resolve().parent.parent
+        file_url =  f"{BASE_DIR}{instance.file}"
+        #Remove file from storage
+        os.remove(file_url)
+        
+        #Remove cover image from storage
+        if instance.cover:
+            cover_url =  f"{BASE_DIR}{instance.cover}"
+            os.remove(cover_url)
+        instance.delete()     
+        return Response(instance.id)
