@@ -48,8 +48,13 @@ function Books() {
                     {books[i].title}
                 </div>
                 <div className={styles.actionButtons}>
-                    <Button href={bookUrl} className={styles.actionButton} as="a">View</Button>
-                    <Button href={editUrl} className={styles.actionButton} as="a">Edit</Button>
+                    <Button href={bookUrl} className={styles.actionButton} as="a">Read</Button>
+                    <Button variant="secondary" href={editUrl} className={styles.actionButton} as="a">Edit</Button>
+                    <Button variant="danger" onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                        e.preventDefault(); deleteBook(books[i].id);
+                    }} className={styles.actionButton} >
+                        Delete
+                    </Button>
                 </div>
             </Col>)
         }
@@ -61,12 +66,37 @@ function Books() {
         setSelectedBook(book);
     }
 
+    const deleteBook = async (id: number) => {
+        const deleteConfirm = confirm("Are you sure you want to delete this book? This action cannot be undone.");
+        if (deleteConfirm) {
+            try {
+                const response = await fetch(
+                    `${apiUrl}/api/v1/book/${id}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${token}`,
+                    },
+                }
+                );
+                if (response.ok) {
+                    setBooks(books.filter((book) => book.id !== id));
+                } else {
+                    console.log("Error deleting book");
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    }
+
     return (
         <div className={styles.books}>
             <Topbar />
             <main className={styles.main}>
                 <Modal show={showInfo}>
-                    <Modal.Header closeButton>
+                    <Modal.Header>
                         <Modal.Title>{selectedBook?.title}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
@@ -79,10 +109,14 @@ function Books() {
                                 return <span key={index}>{author}</span>
                             }) : null}
                         </div>
-                        <div className={styles.infoField}>
-                            ISBN:
-                            {selectedBook?.isbn }
-                        </div>
+                        {selectedBook?.isbn ?
+                            <div className={styles.infoField}>
+                                ISBN:
+                                {selectedBook?.isbn}
+                            </div>
+                            : null
+                        }
+
                         <div className={styles.infoField}>
                             {selectedBook?.description}
                         </div>
