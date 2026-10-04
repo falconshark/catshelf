@@ -27,7 +27,7 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://127.0.0.1:3000',
+  origin: process.env.CORS_ORIGIN,
 }));
 app.use(express.json({ limit: '10kb' }));
 
@@ -54,6 +54,13 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Server error' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Catshelf API running on http://localhost:${PORT}`);
-});
+require('./lib/seed-admin')()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Catshelf API running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error(err.message);
+    process.exit(1);
+  });

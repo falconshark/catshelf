@@ -31,6 +31,9 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       JWT_SECRET: ${JWT_SECRET:?set in .env}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      # initial account, created on first start while no users exist
+      ADMIN_USERNAME: ${ADMIN_USERNAME:?set ADMIN_USERNAME (e.g. -e ADMIN_USERNAME=... or in .env)}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD (min 8 chars)}
       ALLOW_REGISTRATION: ${ALLOW_REGISTRATION:-false}
       TRUST_PROXY: ${TRUST_PROXY:-}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}

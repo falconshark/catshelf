@@ -40,15 +40,17 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 Copy `.env.example` to `.env` and fill in `JWT_SECRET` and `MYSQL_PASSWORD`
 (`MYSQL_HOST` is overridden to `db` by compose).
 
+The initial account is required: pass `ADMIN_USERNAME` and `ADMIN_PASSWORD`
+(password 8-72 bytes) as environment variables, or put them in `.env`.
+It is created on the API's first start, only while the users table is empty.
+
 ```bash
 # Production-like (web :3000, api :8000)
-docker compose up -d --build
+ADMIN_USERNAME=admin ADMIN_PASSWORD='change-me-please' docker compose up -d --build
 
 # Development (hot reload, MySQL exposed on :3306)
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
-
-# Create a user
-docker compose exec -it api node scripts/create-user.js
+ADMIN_USERNAME=admin ADMIN_PASSWORD='change-me-please' \
+  docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
 
 `NEXT_PUBLIC_API_URL` is baked into the web build, so rebuild (`--build`) after changing it.
