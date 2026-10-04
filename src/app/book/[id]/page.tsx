@@ -1,8 +1,10 @@
 'use client';
 import { use, useState, useEffect, useRef } from "react";
-import { Container, Card, Button, Image, Row, Col } from 'react-bootstrap';
+import { Container } from 'react-bootstrap';
 import { ReactReader } from 'react-reader'
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { useAppSelector } from "@/lib/hooks";
+import { useApi, useRequireAuth } from "@/lib/useApi";
+import { assetUrl } from "@/lib/books";
 import Topbar from '@/app/components/Topbar';
 import type { NavItem, Rendition } from 'epubjs'
 import styles from "./page.module.css";
@@ -16,31 +18,26 @@ function Book({ params }: { params: Promise<{ id: string }> }) {
     const toc = useRef<NavItem[]>([])
     const [location, setLocation] = useState<string | number>(0)
 
-    const token = useAppSelector((state) => state.common.token);
+    const token = useRequireAuth();
+    const api = useApi();
     const apiUrl = useAppSelector((state) => state.common.apiUrl);
     const { id } = use(params);
 
     useEffect(() => {
+        if (!token) return;
         const fetchBook = async () => {
             try {
-                const response = await fetch(
-                    `${apiUrl}/api/v1/book/${id}`, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'Authorization': `Token ${token}`,
-                    },
-                }
-                );
+                const response = await api(`/api/v1/book/${encodeURIComponent(id)}/`);
+                if (!response.ok) return;
                 const result = await response.json();
-                const bookUrl = `${apiUrl}/api/v1${result.file}`;
-                setBookUrl(bookUrl);
+                setBookUrl(assetUrl(apiUrl, result.file) ?? '');
             } catch (error) {
-                console.log(error);
+                console.error(error);
             }
         };
         fetchBook();
-    }, []);
+    }, [token, api, apiUrl, id]);
+
     return (
         <div className={styles.books}>
             <Topbar />

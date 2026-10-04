@@ -1,118 +1,70 @@
 'use client';
 import { useState, useEffect } from "react";
-import { Container, Card, Modal, Button, Image, Row, Col } from 'react-bootstrap';
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { Container, Modal, Button, Image, Row, Col } from 'react-bootstrap';
+import { useAppSelector } from "@/lib/hooks";
+import { useApi, useRequireAuth } from "@/lib/useApi";
+import { assetUrl, parseAuthors, type Book } from "@/lib/books";
 import Topbar from '../components/Topbar';
 import styles from "./page.module.css";
 
 function Books() {
-    const [showInfo, setShowInfo] = useState<boolean>(false);
-    const [books, setBooks] = useState<{ id: number, title: string, cover: string, isbn: string, author: string, description: string, }[]>([]);
-    const [selectedBook, setSelectedBook] = useState<{ id: number, title: string, isbn: string, cover: string, author: string, description: string, } | null>(null);
-    const token = useAppSelector((state) => state.common.token);
+    const [books, setBooks] = useState<Book[]>([]);
+    const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+    const token = useRequireAuth();
+    const api = useApi();
     const apiUrl = useAppSelector((state) => state.common.apiUrl);
 
     useEffect(() => {
+        if (!token) return;
         const fetchBooks = async () => {
             try {
-                const response = await fetch(
-                    `${apiUrl}/api/v1/book/`, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'Authorization': `Token ${token}`,
-                    },
-                }
-                );
-                const result = await response.json();
-                setBooks(result);
+                const response = await api('/api/v1/book/');
+                if (response.ok) setBooks(await response.json());
             } catch (error) {
-                console.log(error);
+                console.error(error);
             }
         };
         fetchBooks();
-    }, []);
-
-    const bookList = () => {
-        const items = [];
-        for (let i = 0; i < books.length; i++) {
-            const coverUrl = `${apiUrl}/api/v1${books[i].cover}`;
-            const bookUrl = `/book/${books[i].id}`;
-            const editUrl = `/book/${books[i].id}/edit`;
-
-            items.push(<Col md="2" key={books[i].id}>
-                <div className={styles.cover}>
-                    <Image className={styles.coverImg} src={coverUrl} thumbnail onClick={(e) => hanldeShowInfo(e, books[i])}></Image>
-                </div>
-                <div className="title">
-                    {books[i].title}
-                </div>
-                <div className={styles.actionButtons}>
-                    <Button href={bookUrl} className={styles.actionButton} as="a">Read</Button>
-                    <Button variant="secondary" href={editUrl} className={styles.actionButton} as="a">Edit</Button>
-                    <Button variant="danger" onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                        e.preventDefault(); deleteBook(books[i].id);
-                    }} className={styles.actionButton} >
-                        Delete
-                    </Button>
-                </div>
-            </Col>)
-        }
-        return items;
-    };
-
-    const hanldeShowInfo = (e: React.MouseEvent<HTMLImageElement>, book: { id: number, isbn: string, title: string, cover: string, description: string, author: string, }) => {
-        setShowInfo(!showInfo);
-        setSelectedBook(book);
-    }
+    }, [token, api]);
 
     const deleteBook = async (id: number) => {
         const deleteConfirm = confirm("Are you sure you want to delete this book? This action cannot be undone.");
-        if (deleteConfirm) {
-            try {
-                const response = await fetch(
-                    `${apiUrl}/api/v1/book/${id}/`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'Authorization': `Token ${token}`,
-                    },
-                }
-                );
-                if (response.ok) {
-                    setBooks(books.filter((book) => book.id !== id));
-                } else {
-                    console.log("Error deleting book");
-                }
-            } catch (error) {
-                console.log(error);
+        if (!deleteConfirm) return;
+
+        try {
+            const response = await api(`/api/v1/book/${id}/`, { method: 'DELETE' });
+            if (response.ok) {
+                setBooks((current) => current.filter((book) => book.id !== id));
+            } else {
+                console.error("Error deleting book");
             }
+        } catch (error) {
+            console.error(error);
         }
     }
+
+    const selectedCover = assetUrl(apiUrl, selectedBook?.cover);
 
     return (
         <div className={styles.books}>
             <Topbar />
             <main className={styles.main}>
-                <Modal show={showInfo}>
+                <Modal show={selectedBook !== null} onHide={() => setSelectedBook(null)}>
                     <Modal.Header>
                         <Modal.Title>{selectedBook?.title}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        <div className={styles.cover}>
-                            <Image className={styles.coverImg} src={`${apiUrl}/api/v1${selectedBook?.cover}`} thumbnail></Image>
-                        </div>
+                        {selectedCover && (
+                            <div className={styles.cover}>
+                                <Image className={styles.coverImg} src={selectedCover} alt={selectedBook?.title} thumbnail></Image>
+                            </div>
+                        )}
                         <div className={styles.infoField}>
-                            Author:
-                            {selectedBook ? JSON.parse(selectedBook.author).map((author: string, index: number) => {
-                                return <span key={index}>{author}</span>
-                            }) : null}
+                            Author: {selectedBook ? parseAuthors(selectedBook.author).join(', ') : null}
                         </div>
                         {selectedBook?.isbn ?
                             <div className={styles.infoField}>
-                                ISBN:
-                                {selectedBook?.isbn}
+                                ISBN: {selectedBook.isbn}
                             </div>
                             : null
                         }
@@ -122,7 +74,7 @@ function Books() {
                         </div>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowInfo(false)}>
+                        <Button variant="secondary" onClick={() => setSelectedBook(null)}>
                             Close
                         </Button>
                     </Modal.Footer>
@@ -134,7 +86,26 @@ function Books() {
                     </div>
                     <div className={styles.bookList}>
                         <Row className={styles.latestBooks}>
-                            {books.length !== 0 ? bookList() : <div className={styles.noBooks}>No books available</div>}
+                            {books.length === 0 ? <div className={styles.noBooks}>No books available</div> : books.map((book) => {
+                                const coverUrl = assetUrl(apiUrl, book.cover);
+                                return (
+                                    <Col md="2" key={book.id}>
+                                        <div className={styles.cover}>
+                                            {coverUrl && <Image className={styles.coverImg} src={coverUrl} alt={book.title} thumbnail onClick={() => setSelectedBook(book)}></Image>}
+                                        </div>
+                                        <div className="title">
+                                            {book.title}
+                                        </div>
+                                        <div className={styles.actionButtons}>
+                                            <Button href={`/book/${book.id}`} className={styles.actionButton} as="a">Read</Button>
+                                            <Button variant="secondary" href={`/book/${book.id}/edit`} className={styles.actionButton} as="a">Edit</Button>
+                                            <Button variant="danger" onClick={() => deleteBook(book.id)} className={styles.actionButton}>
+                                                Delete
+                                            </Button>
+                                        </div>
+                                    </Col>
+                                );
+                            })}
                         </Row>
                     </div>
                 </Container>

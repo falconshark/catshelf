@@ -2,9 +2,14 @@
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import NavDropdown from 'react-bootstrap/NavDropdown';
+import Button from 'react-bootstrap/Button';
+import { useAppSelector } from '@/lib/hooks';
+import { useLogout } from '@/lib/useApi';
 
 function Topbar() {
+  const token = useAppSelector((state) => state.common.token);
+  const logout = useLogout();
+
   return (
     <Navbar expand="lg" className="bg-body-tertiary">
     <Container>
@@ -16,7 +21,7 @@ function Topbar() {
           <Nav.Link href="/books">Books</Nav.Link>
         </Nav>
         <Nav className="justify-content-end">
-          <Nav.Link href="/user">{}</Nav.Link>
+          {token && <Button variant="outline-secondary" size="sm" onClick={logout}>Logout</Button>}
         </Nav>
       </Navbar.Collapse>
     </Container>

@@ -30,7 +30,12 @@ services:
       MYSQL_USER: ${MYSQL_USER:-catshelf}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       JWT_SECRET: ${JWT_SECRET:?set in .env}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      ALLOW_REGISTRATION: ${ALLOW_REGISTRATION:-false}
+      TRUST_PROXY: ${TRUST_PROXY:-}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "8000:8000"
     volumes:
@@ -47,6 +52,8 @@ services:
         # URL the *browser* uses to reach the API
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "3000:3000"
     depends_on:

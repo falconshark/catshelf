@@ -7,10 +7,9 @@ module.exports = function requireAuth(req, res, next) {
     return res.status(401).json({ error: 'Authentication required' });
   }
 
-  const token = authHeader.slice(6);
-
   try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    // Pin the algorithm so a token can never pick its own
+    req.user = jwt.verify(authHeader.slice(6), process.env.JWT_SECRET, { algorithms: ['HS256'] });
     next();
   } catch {
     res.status(401).json({ error: 'Invalid or expired token' });

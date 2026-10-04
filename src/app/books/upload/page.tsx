@@ -1,63 +1,60 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Container, Button, Table } from 'react-bootstrap';
+import { Container, Button, Table, Alert } from 'react-bootstrap';
 import Topbar from '@/app/components/Topbar';
 import Dropzone from 'react-dropzone';
-import { useAppDispatch, useAppSelector } from "@/lib/hooks"
+import { useApi, useRequireAuth } from "@/lib/useApi";
 import styles from "./page.module.css";
+
+const MAX_EPUB_BYTES = 100 * 1024 * 1024; // keep in step with the API's limit
 
 const UploadBooks: React.FC = () => {
     const router = useRouter()
-    const token = useAppSelector((state) => state.common.token);
-    const apiUrl = useAppSelector((state) => state.common.apiUrl);
+    useRequireAuth();
+    const api = useApi();
 
-    const dropzoneConfig = {
-        accept: 'application/epub+zip',
-    };
     const [files, setFiles] = useState<File[]>([]);
+    const [error, setError] = useState<string | null>(null);
+    const [uploading, setUploading] = useState(false);
 
     function onDrop(acceptedFiles: File[]) {
-        setFiles(acceptedFiles);
+        setFiles((current) => {
+            const seen = new Set(current.map((f) => `${f.name}:${f.size}`));
+            return [...current, ...acceptedFiles.filter((f) => !seen.has(`${f.name}:${f.size}`))];
+        });
+    }
+
+    function removeFile(file: File) {
+        setFiles((current) => current.filter((f) => f !== file));
     }
 
     async function onUpload() {
+        setError(null);
+        setUploading(true);
+        const failed: File[] = [];
+
         for (const file of files) {
             const data = new FormData();
             data.append('file', file);
             try {
-                const response = await fetch(
-                    `${apiUrl}/api/v1/book/`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Token ${token}`,
-                    },
-                    body: data
-                }
-                );
-                const result = await response.json();
-                if(response.status !== 200){
-                    return;
-                }
-                router.push("/books");
+                const response = await api('/api/v1/book/', { method: 'POST', body: data });
+                if (!response.ok) failed.push(file);
             } catch (error) {
-                console.log(error);
+                console.error(error);
+                failed.push(file);
             }
         }
-    }
 
-    const fileList = () => {
-        const items = [];
-        for (let i = 0; i < files.length; i++) {
-            items.push(<tr key={files[i].name}>
-                <td>{files[i].name}</td>
-                <td><Button variant="danger">Remove</Button></td>
-            </tr>)
+        setUploading(false);
+        if (failed.length === 0) {
+            router.push("/books");
+        } else {
+            // Keep only the files that didn't make it, so Upload can be retried
+            setFiles(failed);
+            setError(`Could not upload: ${failed.map((f) => f.name).join(', ')}`);
         }
-        return items;
-    };
-
-
+    }
 
     return (
         <div className={styles.bookUpload}>
@@ -65,14 +62,19 @@ const UploadBooks: React.FC = () => {
             <main className={styles.main}>
                 <Container>
                     <h1>Upload Books</h1>
+                    {error && <Alert variant="danger">{error}</Alert>}
                     <div className={styles.dropzone}>
-                        <Dropzone onDrop={onDrop}>
+                        <Dropzone
+                            onDrop={onDrop}
+                            accept={{ 'application/epub+zip': ['.epub'] }}
+                            maxSize={MAX_EPUB_BYTES}
+                        >
                             {({ getRootProps, getInputProps }) => (
                                 <section>
                                     <div {...getRootProps()}>
-                                        <input {...getInputProps()} {...dropzoneConfig} />
+                                        <input {...getInputProps()} />
                                         <div className={styles.help}>
-                                            Drop epub file into the dropzone and click "upload" button to upload.
+                                            Drop epub file into the dropzone and click &quot;upload&quot; button to upload.
                                         </div>
                                         <Button>Add File</Button>
                                     </div>
@@ -89,12 +91,19 @@ const UploadBooks: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {fileList()}
+                                {files.map((file) => (
+                                    <tr key={`${file.name}:${file.size}`}>
+                                        <td>{file.name}</td>
+                                        <td><Button variant="danger" disabled={uploading} onClick={() => removeFile(file)}>Remove</Button></td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </Table>
                     </div>
                     <div className={styles.uploadButton}>
-                        <Button onClick={onUpload}>Upload</Button>
+                        <Button onClick={onUpload} disabled={uploading || files.length === 0}>
+                            {uploading ? 'Uploading…' : 'Upload'}
+                        </Button>
                     </div>
                 </Container>
             </main>

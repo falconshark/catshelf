@@ -1,24 +1,32 @@
 const express = require('express');
-const router = express.Router();
 const db = require('../db');
 const requireAuth = require('../middleware/auth');
-const PASSWORD_SALT = process.env.PASSWORD_SALT;
+const { validateNewCredentials, hashPassword } = require('../lib/credentials');
+
+const router = express.Router();
+
+router.param('id', (req, res, next, id) => {
+  if (!/^\d{1,10}$/.test(id)) return res.status(400).json({ error: 'Invalid id' });
+  next();
+});
 
 // POST /api/v1/user/
 router.post('/user/', requireAuth, async (req, res) => {
+  const invalid = validateNewCredentials(req.body);
+  if (invalid) return res.status(400).json({ error: invalid });
+
   try {
     const { username, password } = req.body;
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Please provide both a username and a password.' });
-    }
-    const hashedPassword = bcrypt.hash(password, PASSWORD_SALT);
-    const [result] = await db.query('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashedPassword]);
+    const [result] = await db.query('INSERT INTO users (username, password) VALUES (?, ?)', [
+      username,
+      await hashPassword(password),
+    ]);
     res.status(201).json({ id: result.insertId, username });
   } catch (error) {
-    console.error('Create user error:', error);
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({ error: 'That username is already taken. Please choose another one.' });
     }
+    console.error('Create user error:', error);
     res.status(500).json({ error: "Sorry, we couldn't create the user right now. Please try again later." });
   }
 });

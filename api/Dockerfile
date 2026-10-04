@@ -4,14 +4,14 @@ COPY package.json package-lock.json* ./
 
 # ---- dev: nodemon with source mounted from host ----
 FROM base AS dev
-RUN npm install
+RUN npm ci
 COPY . .
 CMD ["npm", "run", "dev", "--", "--legacy-watch"]
 
 # ---- prod ----
 FROM base AS prod
 ENV NODE_ENV=production
-RUN npm install --omit=dev
+RUN npm ci --omit=dev
 COPY . .
 RUN mkdir -p epub && chown -R node:node /app
 USER node

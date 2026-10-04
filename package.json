@@ -9,25 +9,31 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@next/env": "^15.2.4",
     "@reduxjs/toolkit": "^2.6.1",
-    "bcrypt": "^6.0.0",
     "bootstrap": "^5.3.3",
     "cookies-next": "^5.1.0",
-    "next": "15.2.4",
+    "next": "^15.5",
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.9",
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.8",
     "react-reader": "^2.0.13",
     "react-redux": "^9.2.0",
-    "redux": "^5.0.1",
-    "sass": "^1.86.0"
+    "redux": "^5.0.1"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "typescript": "^5"
+    "typescript": "^5",
+    "sass": "^1.86.0"
+  },
+  "resolutions": {
+    "lodash": "^4.18.0",
+    "@xmldom/xmldom": "^0.8.12",
+    "immutable": "^5.1.5",
+    "nanoid": "^3.3.16",
+    "picomatch": "^2.3.2",
+    "postcss": "^8.5.12"
   }
 }

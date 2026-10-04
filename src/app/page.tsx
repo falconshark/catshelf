@@ -1,54 +1,63 @@
 'use client';
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation'
-import { Form, Button } from 'react-bootstrap';
+import { Form, Button, Alert } from 'react-bootstrap';
 import { useAppDispatch, useAppSelector } from "../lib/hooks"
-import { useCookiesNext } from 'cookies-next';
+import { persistToken } from '@/lib/auth';
 import { setToken } from '@/lib/reducers/commonSlice';
 import styles from "./page.module.css";
 
 function Home() {
-  const { setCookie } = useCookiesNext();
   const router = useRouter()
   const dispatch = useAppDispatch();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const apiUrl = useAppSelector((state) => state.common.apiUrl);
   const token = useAppSelector((state) => state.common.token);
 
   useEffect(() => {
     if (token) {
-      router.push("/dashboard");
+      router.replace("/dashboard");
     }
-  }, [router]);
+  }, [token, router]);
 
-  const handleLogin = async (username: string, password: string) => {
+  const handleLogin = async () => {
+    setError(null);
+    setSubmitting(true);
     try {
-      const response = await fetch(
-        `${apiUrl}/api-token-auth/`, {
+      const response = await fetch(`${apiUrl}/api-token-auth/`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ username: username, password: password })
+        body: JSON.stringify({ username, password })
+      });
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok || typeof result.token !== 'string') {
+        setError(result.error ?? 'Login failed. Please try again.');
+        return;
       }
-      );
-      const result = await response.json();
-      const token = result['token'];
-      setCookie('token', token);
-      dispatch(setToken(token));
-      router.push("/dashboard");
+
+      persistToken(result.token);
+      dispatch(setToken(result.token));
+      router.replace("/dashboard");
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      setError('Could not reach the server. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    handleLogin(username, password);
+    handleLogin();
   };
 
   return (
@@ -59,17 +68,18 @@ function Home() {
         </div>
         <div className="login-form">
           <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3" controlId="formBasicEmail">
+            {error && <Alert variant="danger">{error}</Alert>}
+            <Form.Group className="mb-3" controlId="formBasicUsername">
               <Form.Label>Username</Form.Label>
-              <Form.Control type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
+              <Form.Control type="text" autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} required />
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formBasicPassword">
               <Form.Label>Password</Form.Label>
-              <Form.Control type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <Form.Control type="password" autoComplete="current-password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </Form.Group>
-            <Button variant="primary" type="submit">
-              Login
+            <Button variant="primary" type="submit" disabled={submitting}>
+              {submitting ? 'Logging in…' : 'Login'}
             </Button>
           </Form>
         </div>
