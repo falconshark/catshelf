@@ -1,0 +1,7 @@
+node_modules
+.next
+.git
+.env
+*.md
+api/node_modules
+api/epub

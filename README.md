@@ -34,3 +34,22 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Docker
+
+Copy `.env.example` to `.env` and fill in `JWT_SECRET` and `MYSQL_PASSWORD`
+(`MYSQL_HOST` is overridden to `db` by compose).
+
+```bash
+# Production-like (web :3000, api :8000)
+docker compose up -d --build
+
+# Development (hot reload, MySQL exposed on :3306)
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+# Create a user
+docker compose exec -it api node scripts/create-user.js
+```
+
+`NEXT_PUBLIC_API_URL` is baked into the web build, so rebuild (`--build`) after changing it.
+The DB schema is applied only when the `db-data` volume is first created.
